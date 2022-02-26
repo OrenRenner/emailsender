@@ -1,0 +1,314 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mail Sender Form</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        List_of_EMails = null;
+
+        $( document ).ready(function() {
+            $("#email_lst").html("");
+            $("#new_email").val("");
+            $("#body").val("");
+            $("#theme").val("");
+            List_of_EMails = [];
+        });
+
+        const emailValid = (email) => {
+            const emailRegex = /^([A-Za-z0-9_\-.+])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/;
+            return emailRegex.test(email);
+        }
+
+        function AddEmail(){
+            if(emailValid($("#new_email").val())){
+                $("#email_lst").append("<li>" + $("#new_email").val() + "</li>");
+                List_of_EMails.push("" + $("#new_email").val());
+                $("#new_email").val("");
+            }else{
+                //alert("Email adress is wrong!");
+                Swal.fire({
+                    position: 'top-center',
+                    icon: 'error',
+                    title: 'Email adress is wrong!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+        function SendMessege(){
+            if (List_of_EMails.length == 0){
+                Swal.fire({
+                    position: 'top-center',
+                    icon: 'error',
+                    title: 'Please add email adress!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                return false;
+            }
+
+            if ($("#theme").val() == ""){
+                Swal.fire({
+                    position: 'top-center',
+                    icon: 'error',
+                    title: 'Please add theme!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                return false;
+            }
+
+            emails = ""
+            for(let i = 0; i < List_of_EMails.length; i++){
+                if (i == List_of_EMails.length - 1) emails += List_of_EMails[i]
+                else emails += List_of_EMails[i] + "|"
+            }
+
+            $.ajax({
+                type: 'GET',
+                url: "{% url 'send' %}",
+                data: `emails=${emails}&theme=${$("#theme").val()}&body=${$("#body").val()}`,
+                dataType: 'json',
+                success: function (response) {
+                    if (response.data == "0"){
+                        Swal.fire({
+                            position: 'top-center',
+                            icon: 'success',
+                            title: 'Messege has successfully sended!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        
+                        $("#email_lst").html("");
+                        $("#new_email").val("");
+                        $("#body").val("");
+                        $("#theme").val("");
+                        List_of_EMails = [];
+                    }else{
+                        Swal.fire({
+                            position: 'top-center',
+                            icon: 'error',
+                            title: 'Messege has not sended!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                    
+                },
+                error: function (response) {
+                    Swal.fire({
+                        position: 'top-center',
+                        icon: 'error',
+                        title: 'Messege has not sended!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
+        }
+    </script>
+
+    <style>
+        body{
+            background-color: darkgray;
+            padding: 5%;
+        }
+
+        .mainsender{        
+            background-color: white;
+            width: 100%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .senderstyle{
+            padding: 40px;
+            border-radius: 15px;
+        }
+
+        .category-list * {transition: .4s linear;}
+        .category-list {
+            background: white;
+            list-style-type: circle;
+            list-style-position: inside;
+            padding: 0 10px;
+            margin: 0;
+            width: 30%;
+            margin-bottom: 20px;
+        }
+        
+        .category-list li {
+            font-family: "Trebuchet MS", "Lucida Sans";
+            border-bottom: 1px solid #efefef;
+            padding: 10px 0;
+        }
+        .category-list a {
+            text-decoration: none;
+            color: #555;
+        }
+        .category-list li span {
+            float: right;
+            display: inline-block;
+            border: 1px solid #efefef;
+            padding: 0 5px;
+            font-size: 13px;
+            color: #999;
+        }
+        .category-list li:hover a {color: #c93961;}
+        .category-list li:hover span {
+            color: #c93961;
+            border: 1px solid #c93961;
+        }
+
+        * { box-sizing:border-box; }
+
+        /* form starting stylings ------------------------------- */
+        .group{ 
+            width: 30%;
+            position:relative; 
+            margin-bottom:45px; 
+        }
+        input{
+            font-size:18px;
+            padding:10px 10px 10px 5px;
+            display:block;
+            width:300px;
+            border:none;
+            border-bottom:1px solid #757575;
+        }
+        
+        input:focus{ outline:none; }
+
+        /* LABEL ======================================= */
+        label{
+            color:#999; 
+            font-size:18px;
+            font-weight:normal;
+            position:absolute;
+            pointer-events:none;
+            left:5px;
+            top:10px;
+            transition:0.2s ease all; 
+            -moz-transition:0.2s ease all; 
+            -webkit-transition:0.2s ease all;
+        }
+
+        /* active state */
+        input:focus ~ label, input:valid ~ label    {
+            top:-20px;
+            font-size:14px;
+            color:#44a751;
+        }
+
+        /* BOTTOM BARS ================================= */
+        .bar  { position:relative; display:block; width:300px; }
+        .bar:before, .bar:after   {
+            content:'';
+            height:2px; 
+            width:0;
+            bottom:1px; 
+            position:absolute;
+            background:#44a751; 
+            transition:0.2s ease all; 
+            -moz-transition:0.2s ease all; 
+            -webkit-transition:0.2s ease all;
+        }
+        .bar:before {
+            left:50%;
+        }
+        .bar:after {
+            right:50%; 
+        }
+
+        /* active state */
+        input:focus ~ .bar:before, input:focus ~ .bar:after {
+            width:50%;
+        }
+
+        /* HIGHLIGHTER ================================== */
+        .highlight {
+            position:absolute;
+            height:60%; 
+            width:100px; 
+            top:25%; 
+            left:0;
+            pointer-events:none;
+            opacity:0.5;
+        }
+
+        /* active state */
+        input:focus ~ .highlight {
+            -webkit-animation:inputHighlighter 0.3s ease;
+            -moz-animation:inputHighlighter 0.3s ease;
+            animation:inputHighlighter 0.3s ease;
+        }
+
+        /* ANIMATIONS ================ */
+        @-webkit-keyframes inputHighlighter {
+            from { background:#44a751; }
+            to  { width:0; background:transparent; }
+        }
+        @-moz-keyframes inputHighlighter {
+            from { background:#44a751; }
+            to  { width:0; background:transparent; }
+        }
+        @keyframes inputHighlighter {
+            from { background:#44a751; }
+            to  { width:0; background:transparent; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mainsender senderstyle">    
+            
+        <ul class="category-list" id="email_lst">
+        </ul>
+        
+        <div class="row" style="width: 100%;margin-left: 5px;">
+            <div class="col-sm-3">
+                <div class="group">      
+                    <input id="new_email" type="text" required>
+                    <span class="highlight"></span>
+                    <span class="bar"></span>
+                    <label>Email</label>
+                </div>
+            </div>
+            <div class="group col-sm-2" style="padding-top: 10px;">
+                <i class="fa fa-plus" style="font-size: xx-large;color: #44a751; cursor: pointer;" onclick="AddEmail()"></i>
+            </div>
+        </div>
+        
+        <div class="group" style="margin-left: 20px;">      
+            <input id="theme" type="text" required>
+            <span class="highlight"></span>
+            <span class="bar"></span>
+            <label>Theme</label>
+        </div>
+
+        <div class="wrap-input100 validate-input" data-validate = "Message is required" style="margin-left: 20px;margin-right: 20px;">
+            <textarea class="input100" name="message" placeholder="Your Text" id="body"></textarea>
+            <span class="focus-input100"></span>
+        </div>
+
+        <div class="container-contact100-form-btn" style="margin-left: 20px;">
+            <button class="contact100-form-btn" onclick="SendMessege()">
+                Send Message
+            </button>
+        </div>
+    </div>
+</body>
+</html>
