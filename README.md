@@ -1,4 +1,4 @@
-# emailsender  Django Project
+# emailsender  Django Project 
 
 <h2>Sending email project</h2>
 
